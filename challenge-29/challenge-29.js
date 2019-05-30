@@ -1,6 +1,6 @@
-(function() {
+(function(dom) {
   'use strict';
-
+  //python -m http.server 8000 --bind 127.0.0.1
   /*
   Vamos estruturar um pequeno app utilizando módulos.
   Nosso APP vai ser um cadastro de carros. Vamos fazê-lo por partes.
@@ -36,4 +36,69 @@
   que será nomeado de "app".
   */
 
-})();
+  var app = (function() {
+    return {
+      init: function() {
+        this.companyInfo();
+        this.initEvents();
+      },
+
+      initEvents: function initEvents() {
+        new DOM('[data-js=form-register]').on('submit', this.handleSubmit);
+      },
+
+      handleSubmit: function handleSubmit(e) {
+        e.preventDefault();
+        var $tableCar = new DOM('[data-js=table-car]').get();
+        $tableCar.appendChild(app.createNewCar());
+      },
+
+      createNewCar: function createNewCar() {
+        var $fragment = document.createDocumentFragment();
+        var $tr = document.createElement('tr');
+        var $tdBrand = document.createElement('td');
+        var $tdYear = document.createElement('td');
+        var $tdPlate = document.createElement('td');
+        var $tdColor = document.createElement('td');
+        var $tdImage = document.createElement('td');
+        var $image = document.createElement('img');
+
+        $image.src = new DOM('[data-js=image]').get().value;
+        $tdImage.appendChild($image);
+
+        $tdBrand.textContent = new DOM('[data-js=brand-model]').get().value;
+        $tdYear.textContent = new DOM('[data-js=year]').get().value;
+        $tdPlate.textContent = new DOM('[data-js=plate]').get().value;
+        $tdColor.textContent = new DOM('[data-js=color]').get().value;
+
+        $tr.appendChild($tdImage);
+        $tr.appendChild($tdBrand);
+        $tr.appendChild($tdYear);
+        $tr.appendChild($tdPlate);
+        $tr.appendChild($tdColor);
+
+        return $fragment.appendChild($tr);
+      },
+
+      companyInfo: function companyInfo() {
+        var ajax = new XMLHttpRequest();
+        ajax.open('GET', 'company.json', true);
+        ajax.send();
+        ajax.addEventListener('readystatechange', this.getCompanyInfo, false);
+      },
+
+      getCompanyInfo: function getCompanyInfo() {
+        if (this.readyState === 4 && this.status === 200) {
+          var data = JSON.parse(this.responseText);
+          var $companyName = new DOM('[data-js=company-name]');
+          var $companyPhone = new DOM('[data-js=company-phone]');
+          $companyName.get().textContent = data.name;
+          $companyPhone.get().textContent = data.phone;
+        }
+      }
+    };
+  })();
+
+  app.init();
+
+})(window.DOM);
